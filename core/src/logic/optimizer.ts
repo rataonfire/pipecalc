@@ -1,4 +1,4 @@
-import { Detail, Tube, CuttingState } from "./types/types";
+import { Detail, Tube, CuttingState } from "../types/types";
 
 const sortDetailsByLength = (details: Detail[]) => {
   return [...details].sort((a, b) => b.length - a.length);
@@ -117,3 +117,14 @@ export const optimizeCutting = (details: Detail[]): CuttingState => {
     isComplete: remainingDetails.length === 0,
   };
 };
+const test = [
+  { name: "Tube_1", length: 300, amount: 100 },
+  { name: "Tube_2", length: 900, amount: 400 },
+  { name: "Tube_3", length: 1200, amount: 70 },
+  { name: "Tube_4", length: 150, amount: 200 },
+  { name: "Tube_5", length: 2900, amount: 70 },
+];
+const result = optimizeCutting(test);
+console.log(result);
+console.log(result.tubes[0].placedDetails);
+console.log(result.tubes[0].remainingLength);
