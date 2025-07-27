@@ -1,44 +1,76 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Tube Cutting</title>
-  </head>
-  <body>
-    <section
-      class="m-[3%] rounded-4xl h-screen bg-sky-700 flex flex-col align-middle justify-center"
-    >
-      <h1 class="text-5xl p-[7%] text-center text-white">
-        TUBE CUTTING OPTIMIZER
-      </h1>
-      <section class="flex flex-row p-[3%]">
-        <input
-          type="text"
-          placeholder="Tube"
-          class="bg-white mr-[1%] border-0 w-full px-4 py-2 rounded-full text-blue-800 placeholder-sky-700 p-[1%]"
-        />
-        <input
-          type="text"
-          placeholder="1000"
-          class="bg-white mr-[1%] border-0 rounded-full w-full px-4 py-2 text-blue-800 placeholder-sky-700 p-[1%]"
-        />
-        <input
-          type="text"
-          placeholder="10"
-          class="bg-white mr-[1%] border-0 rounded-full w-full px-4 py-2 text-blue-800 placeholder-sky-700 p-[1%]"
-        />
-        <button
-          class="bg-sky-900 mr-[1%] text-1xl w-auto text-white p-[2%] rounded-3xl"
-        >
-          ADD
-        </button>
-      </section>
-      <button
-        class="bg-green-500 m-[3%] pt-[2%] pb-[2%] text-2xl w-auto text-white p-[1%] rounded-3xl"
-      >
-        OPTIMIZE
-      </button>
-    </section>
-    <script type="module" src="/src/renderer.ts"></script>
-  </body>
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tube Cutting Optimizer</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 p-4">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-blue-600 rounded-3xl shadow-xl p-8 text-white">
+                <h1 class="text-4xl font-light text-center mb-8 tracking-wide">
+                    TUBE CUTTING OPTIMIZER
+                </h1>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <input
+                        type="text"
+                        id="tubeName"
+                        placeholder="Tube Name"
+                        class="px-4 py-3 rounded-full text-white outline-none placeholder-blue-200"
+                    />
+                    <input
+                        type="number"
+                        id="tubeLength"
+                        placeholder="Length (mm)"
+                        class="px-4 py-3 rounded-full text-white outline-none placeholder-blue-200"
+                    />
+                    <input
+                        type="number"
+                        id="tubeQuantity"
+                        placeholder="Qty"
+                        class="px-4 py-3 rounded-full text-white outline-none placeholder-blue-200"
+                    />
+                    <button
+                        id="addBtn"
+                        class="px-6 py-3 rounded-full border-2 border-white hover:bg-white hover:text-blue-600 transition-colors"
+                    >
+                        ADD
+                    </button>
+                </div>
+
+                <button
+                    id="optimizeBtn"
+                    class="w-full bg-green-500 hover:bg-green-600 py-4 rounded-full text-xl font-bold mb-6 transition-colors"
+                >
+                    OPTIMIZE
+                </button>
+
+                <div class="bg-blue-500 rounded-2xl p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">
+                            Tubes to Cut (<span id="tubeCount">0</span>)
+                        </h3>
+                        <button
+                            id="clearBtn"
+                            class="text-sm bg-red-500 px-4 py-2 rounded-full hover:bg-red-600 transition-colors hidden"
+                        >
+                            Clear All
+                        </button>
+                    </div>
+
+                    <div id="tubeList">
+                        <div class="text-center text-blue-200 py-8">
+                            No tubes added yet
+                        </div>
+                    </div>
+                </div>
+
+                <div id="results"></div>
+            </div>
+        </div>
+
+        <script type="module" src="src/renderer.ts"></script>
+    </body>
 </html>
