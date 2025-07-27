@@ -1,4 +1,3 @@
-import "./index.css";
 import { optimizeCutting } from "./logic/optimizer";
 import { CuttingState, Detail } from "./types/types";
 
@@ -76,17 +75,17 @@ const updateDisplay = (tubes: State): void => {
 
 const showResults = (result: CuttingState): void => {
   const efficiency = (
-    (1 - result.totalWaste / (result.tubes.length * 5500)) *
+    (1 - result.totalWaste / (result.totalTubes * 5500)) *
     100
   ).toFixed(1);
 
   let html = `
         <div class="mt-6 bg-green-500 rounded-2xl p-6">
-            <h3 class="text-xl font-bold mb-4">Results</h3>
-            <div class="grid grid-cols-3 gap-4 mb-4 text-center">
+            <h3 class="text-xl font-bold mb-4">Optimization Results</h3>
+            <div class="grid grid-cols-3 gap-4 mb-6 text-center">
                 <div>
-                    <div class="text-2xl font-bold">${result.tubes.length}</div>
-                    <div class="text-sm">Tubes Needed</div>
+                    <div class="text-2xl font-bold">${result.totalTubes}</div>
+                    <div class="text-sm">Total Tubes</div>
                 </div>
                 <div>
                     <div class="text-2xl font-bold">${efficiency}%</div>
@@ -94,23 +93,56 @@ const showResults = (result: CuttingState): void => {
                 </div>
                 <div>
                     <div class="text-2xl font-bold">${result.totalWaste}</div>
-                    <div class="text-sm">Waste (mm)</div>
+                    <div class="text-sm">Total Waste (mm)</div>
                 </div>
             </div>
-            <div class="space-y-2">
+
+            <h4 class="text-lg font-semibold mb-4">Tube Groups (${result.tubeGroups.length} types):</h4>
+            <div class="space-y-4">
     `;
 
-  result.tubes.forEach((tube, index) => {
+  result.tubeGroups.forEach((group, index) => {
+    const avgWaste = (group.waste / group.amount).toFixed(1);
+    const sampleTube = group.tubes[0];
+
     html += `
-            <div class="bg-green-400 rounded-lg p-3">
-                <div class="font-semibold mb-2">Tube ${index + 1}:</div>
+            <div class="bg-green-400 rounded-lg p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="font-bold text-lg">${group.name}</div>
+                    <div class="text-sm bg-green-600 px-3 py-1 rounded-full">
+                        ${group.amount} tubes needed
+                    </div>
+                </div>
+
+                <div class="bg-green-300 rounded p-3 mb-2">
+                    <div class="font-semibold mb-2">Cutting Pattern:</div>
+                    <div class="space-y-1">
         `;
 
-    tube.placedDetails.forEach((detail) => {
-      html += `<div class="text-sm">• ${detail.name}: ${detail.length}mm</div>`;
+    sampleTube.placedDetails.forEach((detail) => {
+      html += `
+                <div class="flex justify-between text-sm">
+                    <span>• ${detail.name}</span>
+                    <span>${detail.length}mm</span>
+                </div>
+            `;
     });
 
-    html += `<div class="text-sm text-green-100 mt-1">Waste: ${tube.remainingLength}mm</div></div>`;
+    html += `
+                    </div>
+                    <div class="border-t border-green-400 mt-2 pt-2 text-sm">
+                        <div class="flex justify-between">
+                            <span>Waste per tube:</span>
+                            <span class="text-red-700 font-semibold">${avgWaste}mm</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Total waste:</span>
+                            <span class="text-red-700 font-semibold">${group.waste}mm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
   });
 
   html += "</div></div>";

@@ -1,4 +1,4 @@
-import { Detail, Tube, CuttingState } from "../types/types";
+import { CuttingState, Detail, OptimizedTubeGroup, Tube } from "../types/types";
 
 const sortDetailsByLength = (details: Detail[]) => {
   return [...details].sort((a, b) => b.length - a.length);
@@ -6,7 +6,7 @@ const sortDetailsByLength = (details: Detail[]) => {
 
 const findBestDetailForRemainingSpace = (
   details: Detail[],
-  remainingSpace: number
+  remainingSpace: number,
 ): Detail | null => {
   let bestDetail: Detail | null = null;
   let smallestWaste = Infinity;
@@ -40,7 +40,7 @@ const decreaseDetailAmount = (details: Detail[], detailName: string) => {
 
 const updateRemainingDetails = (
   remainingDetails: Detail[],
-  usedDetails: readonly Detail[]
+  usedDetails: readonly Detail[],
 ): Detail[] => {
   let updated = [...remainingDetails];
 
@@ -51,16 +51,9 @@ const updateRemainingDetails = (
   return updated;
 };
 
-const calculateTotalWaste = (tubes: Tube[]): number => {
-  return tubes.reduce(
-    (totalWaste, tube) => totalWaste + tube.remainingLength,
-    0
-  );
-};
-
 const fillTubeOptimally = (
   availableDetails: Detail[],
-  tubeLength: number
+  tubeLength: number,
 ): Tube => {
   const placedDetails: Detail[] = [];
   let remainingLength = tubeLength;
@@ -69,7 +62,7 @@ const fillTubeOptimally = (
   while (availableDetailsCopy.length > 0) {
     const bestDetail = findBestDetailForRemainingSpace(
       availableDetailsCopy,
-      remainingLength
+      remainingLength,
     );
     if (!bestDetail) {
       break;
@@ -82,7 +75,7 @@ const fillTubeOptimally = (
     remainingLength -= bestDetail.length;
     availableDetailsCopy = decreaseDetailAmount(
       availableDetailsCopy,
-      bestDetail.name
+      bestDetail.name,
     );
   }
 
@@ -91,6 +84,45 @@ const fillTubeOptimally = (
     remainingLength: remainingLength,
     placedDetails: placedDetails as readonly Detail[],
   };
+};
+
+const createTubeSignature = (tube: Tube): string => {
+  const sortedDetails = [...tube.placedDetails].sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
+  return sortedDetails.map((d) => `${d.name}:${d.length}`).join("|");
+};
+
+const groupSimilarTubes = (tubes: Tube[]): OptimizedTubeGroup[] => {
+  const tubeMap = new Map<string, Tube[]>();
+
+  tubes.forEach((tube) => {
+    const signature = createTubeSignature(tube);
+    if (!tubeMap.has(signature)) {
+      tubeMap.set(signature, []);
+    }
+    tubeMap.get(signature)!.push(tube);
+  });
+
+  return Array.from(tubeMap.entries()).map(
+    ([signature, similarTubes], index) => {
+      const firstTube = similarTubes[0];
+      const totalWaste = similarTubes.reduce(
+        (sum, tube) => sum + tube.remainingLength,
+        0,
+      );
+
+      const detailNames = firstTube.placedDetails.map((d) => d.name).join(", ");
+      const groupName = `Type ${index + 1} (${detailNames})`;
+
+      return {
+        name: groupName,
+        tubes: similarTubes,
+        waste: totalWaste,
+        amount: similarTubes.length,
+      };
+    },
+  );
 };
 
 export const optimizeCutting = (details: Detail[]): CuttingState => {
@@ -104,27 +136,19 @@ export const optimizeCutting = (details: Detail[]): CuttingState => {
 
     remainingDetails = updateRemainingDetails(
       remainingDetails,
-      filledTube.placedDetails
+      filledTube.placedDetails,
     );
   }
 
-  const totalWaste = calculateTotalWaste(tubes);
+  const tubeGroups = groupSimilarTubes(tubes);
+  const totalWaste = tubeGroups.reduce((sum, group) => sum + group.waste, 0);
+  const totalTubes = tubes.length;
 
   return {
-    tubes: tubes,
-    remainingDetails: remainingDetails,
-    totalWaste: totalWaste,
+    tubeGroups,
+    remainingDetails,
+    totalWaste,
+    totalTubes,
     isComplete: remainingDetails.length === 0,
   };
 };
-const test = [
-  { name: "Tube_1", length: 300, amount: 100 },
-  { name: "Tube_2", length: 900, amount: 400 },
-  { name: "Tube_3", length: 1200, amount: 70 },
-  { name: "Tube_4", length: 150, amount: 200 },
-  { name: "Tube_5", length: 2900, amount: 70 },
-];
-const result = optimizeCutting(test);
-console.log(result);
-console.log(result.tubes[0].placedDetails);
-console.log(result.tubes[0].remainingLength);
